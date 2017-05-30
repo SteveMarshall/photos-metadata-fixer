@@ -1,3 +1,4 @@
+import PhotosMetadataFixerFramework
 import ScriptingBridge
 
 if let photos: PhotosApplication = SBApplication(

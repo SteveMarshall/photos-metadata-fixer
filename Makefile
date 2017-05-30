@@ -8,6 +8,9 @@ run: build
 	.build/debug/photos-metadata-fixer
 .PHONY: run
 
+test: .build/debug/photos-metadata-fixer Sources/* Tests/* lint
+	swift test
+
 lint: Sources/*
 	swiftlint
 .PHONY: lint
