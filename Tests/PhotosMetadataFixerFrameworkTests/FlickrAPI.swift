@@ -2,6 +2,14 @@ import XCTest
 @testable import PhotosMetadataFixerFramework
 
 class FlickrAPITest: XCTestCase {
+    func queryItems(for url: URL?) -> [URLQueryItem]? {
+        // Pass the querystring through URLComponents so we don't
+        // have to manually parse it
+        var components = URLComponents()
+        components.query = url?.query
+        return components.queryItems
+    }
+
     func testCall_PassesAPIKeyParameter() {
         let mock = MockURLSession()
         let api = FlickrAPI(
@@ -15,14 +23,11 @@ class FlickrAPITest: XCTestCase {
 
         api.call(method: "dummy-method")
 
-        // Pass the querystring through URLComponents so we don't
-        // have to manually parse it ourselves
-        var lastURLComponents = URLComponents()
-        lastURLComponents.query = mock.lastURL?.query
+        let actualQueryItems = queryItems(for: mock.lastURL)
         XCTAssertTrue(
-            lastURLComponents.queryItems?.contains(expectedItem) ?? false,
+            actualQueryItems?.contains(expectedItem) ?? false,
             "\(expectedItem) not found in "
-          + String(describing: lastURLComponents.queryItems)
+          + String(describing: actualQueryItems)
         )
     }
 
@@ -39,14 +44,11 @@ class FlickrAPITest: XCTestCase {
 
         api.call(method: "dummy-method")
 
-        // Pass the querystring through URLComponents so we don't
-        // have to manually parse it ourselves
-        var lastURLComponents = URLComponents()
-        lastURLComponents.query = mock.lastURL?.query
+        let actualQueryItems = queryItems(for: mock.lastURL)
         XCTAssertTrue(
-            lastURLComponents.queryItems?.contains(expectedItem) ?? false,
+            actualQueryItems?.contains(expectedItem) ?? false,
             "\(expectedItem) not found in "
-          + String(describing: lastURLComponents.queryItems)
+          + String(describing: actualQueryItems)
         )
     }
 }
