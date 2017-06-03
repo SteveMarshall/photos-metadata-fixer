@@ -14,10 +14,25 @@ public class FlickrAPI {
         self.urlSession = urlSession
     }
 
-    func call(method: String) {
-        let url = URL(string: "\(rootUrl)?"
-                            + "api_key=\(apiKey)&method=\(method)"
-        )!
+    func call(method: String, parameters: [String: String] = [:]) {
+        guard var urlComponents = URLComponents(
+            string: rootUrl
+        ) else {
+            return
+        }
+        urlComponents.queryItems = [
+            URLQueryItem(name: "api_key", value: apiKey),
+            URLQueryItem(name: "method", value: method)
+        ]
+        urlComponents.queryItems?.append(contentsOf:
+            parameters.map({ name, value in
+                URLQueryItem(name: name, value: value)
+            })
+        )
+
+        guard let url = urlComponents.url else {
+            return
+        }
         _ = urlSession.dataTask(
             with: url,
             completionHandler: { _, _, _ -> Void in
