@@ -1,29 +1,34 @@
 import Foundation
 
 public class FlickrAPI {
-    let rootUrl = "https://api.flickr.com/services/rest/"
-    let apiKey: String
+    let rootURL = "https://api.flickr.com/services/rest/"
     let urlSession: URLSessionProtocol
+    let coreQueryItems: [URLQueryItem]
 
     public init(
         withAPIKey apiKey: String,
         withURLSession urlSession: URLSessionProtocol
             = URLSession.shared
     ) {
-        self.apiKey = apiKey
+        coreQueryItems = [
+            URLQueryItem(name: "api_key", value: apiKey),
+            URLQueryItem(name: "format", value: "json"),
+            URLQueryItem(name: "nojsoncallback", value: "1")
+        ]
         self.urlSession = urlSession
     }
 
     func call(method: String, parameters: [String: String] = [:]) {
         guard var urlComponents = URLComponents(
-            string: rootUrl
+            string: rootURL
         ) else {
             return
         }
-        urlComponents.queryItems = [
-            URLQueryItem(name: "api_key", value: apiKey),
+
+        urlComponents.queryItems = coreQueryItems
+        urlComponents.queryItems?.append(
             URLQueryItem(name: "method", value: method)
-        ]
+        )
         urlComponents.queryItems?.append(contentsOf:
             parameters.map({ name, value in
                 URLQueryItem(name: name, value: value)

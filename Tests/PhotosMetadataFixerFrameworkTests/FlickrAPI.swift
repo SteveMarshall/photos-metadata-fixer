@@ -31,6 +31,33 @@ class FlickrAPITest: XCTestCase {
         )
     }
 
+    func testCall_RequestsJSONWithoutCallback() {
+        let mock = MockURLSession()
+        let api = FlickrAPI(
+            withAPIKey: "dummy-api-key",
+            withURLSession: mock
+        )
+        let expectedItems = [
+            "format": "json",
+            "nojsoncallback": "1"
+        ]
+
+        api.call(method: "dummy-method")
+
+        let actualQueryItems = queryItems(for: mock.lastURL)
+        for (name, value) in expectedItems {
+            let expectedItem = URLQueryItem(
+                name: name,
+                value: value
+            )
+            XCTAssertTrue(
+                actualQueryItems?.contains(expectedItem) ?? false,
+                "\(expectedItem) not found in "
+              + String(describing: actualQueryItems)
+            )
+        }
+    }
+
     func testCall_RequestsCorrectMethod() {
         let mock = MockURLSession()
         let api = FlickrAPI(
