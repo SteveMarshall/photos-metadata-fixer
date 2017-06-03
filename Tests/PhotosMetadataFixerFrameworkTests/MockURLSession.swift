@@ -2,13 +2,18 @@ import Foundation
 import PhotosMetadataFixerFramework
 
 class MockURLSession: URLSessionProtocol {
-    private (set) var lastURL: URL?
+    var nextDataTask = MockURLSessionDataTask()
+    var nextData: Data?
+    var nextResponse: URLResponse?
+    var nextError: Error?
+    var lastURL: URL?
 
     func dataTask(
         with url: URL,
         completionHandler: @escaping DataTaskResult
-    ) -> URLSessionDataTask {
+    ) -> URLSessionDataTaskProtocol {
         lastURL = url
-        return URLSessionDataTask()
+        completionHandler(nextData, nextResponse, nextError)
+        return nextDataTask
     }
 }

@@ -6,6 +6,16 @@ public protocol URLSessionProtocol {
     func dataTask(
         with url: URL,
         completionHandler: @escaping DataTaskResult
-    ) -> URLSessionDataTask
+    ) -> URLSessionDataTaskProtocol
 }
-extension URLSession: URLSessionProtocol {}
+extension URLSession: URLSessionProtocol {
+    public func dataTask(
+        with url: URL,
+        completionHandler: @escaping DataTaskResult
+    ) -> URLSessionDataTaskProtocol {
+        return (
+            dataTask(with: url, completionHandler: completionHandler)
+                as URLSessionDataTask
+        ) as URLSessionDataTaskProtocol
+    }
+}
