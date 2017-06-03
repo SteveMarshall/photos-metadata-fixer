@@ -14,8 +14,10 @@ public class FlickrAPI {
         self.urlSession = urlSession
     }
 
-    func call() {
-        let url = URL(string: "\(rootUrl)?api_key=\(apiKey)")!
+    func call(method: String) {
+        let url = URL(string: "\(rootUrl)?"
+                            + "api_key=\(apiKey)&method=\(method)"
+        )!
         _ = urlSession.dataTask(
             with: url,
             completionHandler: { _, _, _ -> Void in
