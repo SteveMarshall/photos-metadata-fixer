@@ -1,7 +1,7 @@
 import XCTest
 @testable import PhotosMetadataFixerFramework
 
-class FlickrAPITest: XCTestCase {
+class FlickrAPITests: XCTestCase {
     func queryItems(for url: URL?) -> [URLQueryItem]? {
         // Pass the querystring through URLComponents so we don't
         // have to manually parse it
