@@ -19,11 +19,21 @@ guard let flickrAPIKey = ProcessInfo.processInfo.environment[
 }
 
 let api = FlickrAPI(withAPIKey: flickrAPIKey)
+let flickrUserID = "steviebm"
 
 if let photos: PhotosApplication = SBApplication(
     bundleIdentifier: "com.apple.Photos"
-) {
-    for item in photos.selection! {
-        print(item.name!.isEmpty ? "[No name]" : item.name!)
+), let selection = photos.selection {
+    for item in selection {
+        print(item.name ?? "[No name]")
+        guard let itemDate = item.date else {
+            continue
+        }
+        let result = api.call(method: "flickr.photos.search", parameters: [
+            "user_id": flickrUserID,
+            "min_taken_date": String(Int(itemDate.timeIntervalSince1970)),
+            "max_taken_date": String(Int(itemDate.timeIntervalSince1970))
+        ])
+        print(result)
     }
 }
