@@ -21,18 +21,25 @@ guard let flickrAPIKey = ProcessInfo.processInfo.environment[
 let api = FlickrAPI(withAPIKey: flickrAPIKey)
 let flickrUserID = "steviebm"
 
+let timeZone = Calendar.current.timeZone
 if let photos: PhotosApplication = SBApplication(
     bundleIdentifier: "com.apple.Photos"
 ), let selection = photos.selection {
     for item in selection {
-        print(item.name ?? "[No name]")
-        guard let itemDate = item.date else {
+        // Brute force into daylight savings time if needs be
+        // (This won't catch cases where times/zones are wrong)
+        guard let itemDate = item.date,
+              let offsetDate = Calendar.current.date(
+                byAdding: .second,
+                value: Int(timeZone.daylightSavingTimeOffset(for: itemDate)),
+                to: itemDate
+              ) else {
             continue
         }
         let result = api.call(method: "flickr.photos.search", parameters: [
             "user_id": flickrUserID,
-            "min_taken_date": String(Int(itemDate.timeIntervalSince1970)),
-            "max_taken_date": String(Int(itemDate.timeIntervalSince1970))
+            "min_taken_date": String(Int(offsetDate.timeIntervalSince1970)),
+            "max_taken_date": String(Int(offsetDate.timeIntervalSince1970))
         ])
         print(result)
     }
