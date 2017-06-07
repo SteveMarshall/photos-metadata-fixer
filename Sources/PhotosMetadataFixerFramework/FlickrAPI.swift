@@ -1,4 +1,5 @@
 import Foundation
+import SwiftyJSON
 
 public class FlickrAPI {
     let rootURL = "https://api.flickr.com/services/rest/"
@@ -18,11 +19,12 @@ public class FlickrAPI {
         self.urlSession = urlSession
     }
 
-    func call(method: String, parameters: [String: String] = [:]) {
+    public func call(method: String, parameters: [String: String] = [:])
+    -> JSON {
         guard var urlComponents = URLComponents(
             string: rootURL
         ) else {
-            return
+            return JSON.null
         }
 
         urlComponents.queryItems = coreQueryItems
@@ -36,11 +38,22 @@ public class FlickrAPI {
         )
 
         guard let url = urlComponents.url else {
-            return
+            return JSON.null
         }
-        _ = urlSession.dataTask(
+
+        var json: JSON = JSON.null
+        let semaphore = DispatchSemaphore( value: 0 )
+        let task = urlSession.dataTask(
             with: url,
-            completionHandler: { _, _, _ -> Void in
+            completionHandler: { data, _, _ -> Void in
+            if let data = data {
+                json = JSON(data: data)
+            }
+            semaphore.signal()
         })
+        task.resume()
+        semaphore.wait()
+
+        return json
     }
 }

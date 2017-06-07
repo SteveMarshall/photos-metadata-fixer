@@ -21,7 +21,7 @@ class FlickrAPITest: XCTestCase {
             value: "dummy-api-key"
         )
 
-        api.call(method: "dummy-method")
+        _ = api.call(method: "dummy-method")
 
         let actualQueryItems = queryItems(for: mock.lastURL)
         XCTAssertTrue(
@@ -42,7 +42,7 @@ class FlickrAPITest: XCTestCase {
             "nojsoncallback": "1"
         ]
 
-        api.call(method: "dummy-method")
+        _ = api.call(method: "dummy-method")
 
         let actualQueryItems = queryItems(for: mock.lastURL)
         for (name, value) in expectedItems {
@@ -69,7 +69,7 @@ class FlickrAPITest: XCTestCase {
             value: "dummy-method"
         )
 
-        api.call(method: "dummy-method")
+        _ = api.call(method: "dummy-method")
 
         let actualQueryItems = queryItems(for: mock.lastURL)
         XCTAssertTrue(
@@ -90,7 +90,7 @@ class FlickrAPITest: XCTestCase {
             "second-parameter": "second-value"
         ]
 
-        api.call(method: "dummy-method", parameters: expectedItems)
+        _ = api.call(method: "dummy-method", parameters: expectedItems)
 
         let actualQueryItems = queryItems(for: mock.lastURL)
         for (name, value) in expectedItems {
@@ -104,5 +104,18 @@ class FlickrAPITest: XCTestCase {
               + String(describing: actualQueryItems)
             )
         }
+    }
+
+    func testCall_ReturnsJSON() {
+        let mock = MockURLSession()
+        let api = FlickrAPI(
+            withAPIKey: "dummy-api-key",
+            withURLSession: mock
+        )
+        mock.nextData = "{\"stat\": \"ok\"}".data(using: .utf8)
+
+        let actual = api.call(method: "dummy-method")
+
+        XCTAssertEqual(["stat": "ok"], actual)
     }
 }
