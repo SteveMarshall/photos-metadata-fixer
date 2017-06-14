@@ -36,11 +36,37 @@ if let photos: PhotosApplication = SBApplication(
               ) else {
             continue
         }
-        let result = api.call(method: "flickr.photos.search", parameters: [
+
+        let candidates = api.call(method: "flickr.photos.search", parameters: [
             "user_id": flickrUserID,
             "min_taken_date": String(Int(offsetDate.timeIntervalSince1970)),
             "max_taken_date": String(Int(offsetDate.timeIntervalSince1970))
-        ])
-        print(result)
+        ])["photos"]["photo"]
+
+        let matches = candidates.arrayValue.filter { photo in
+            item.name == photo["title"].string
+        }
+
+        let itemName: String
+        if let name = item.name, !name.isEmpty {
+            itemName = name
+        } else {
+            itemName = "unnamed photo"
+        }
+
+        guard matches.count == 1 else {
+            print(
+                "⛔️ ",
+                matches.isEmpty ? "No" : matches.count,
+                "matches on flickr for \(itemName)",
+                "taken on \(itemDate) (\(candidates.count) candidates)"
+            )
+            continue
+        }
+
+        print(
+            "✅  Matched \(itemName) taken on \(itemDate)",
+            "(\(candidates.count) candidates)"
+        )
     }
 }
