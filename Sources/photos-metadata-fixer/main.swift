@@ -49,7 +49,7 @@ if let photosApp: PhotosApplication = SBApplication(
 
         let photoName: String
         if let name = photo.name, !name.isEmpty {
-            photoName = name
+            photoName = "\"\(name)\""
         } else {
             photoName = "unnamed photo"
         }
@@ -59,7 +59,8 @@ if let photosApp: PhotosApplication = SBApplication(
                 "⛔️ ",
                 matches.isEmpty ? "No" : matches.count,
                 "matches on flickr for \(photoName)",
-                "taken on \(photoDate) (\(candidates.count) candidates)"
+                "taken on \(photoDate) (\(candidates.count) candidates)",
+                to: &standardError
             )
             continue
         }
