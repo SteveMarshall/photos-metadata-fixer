@@ -22,17 +22,17 @@ let api = FlickrAPI(withAPIKey: flickrAPIKey)
 let flickrUserID = "steviebm"
 
 let timeZone = Calendar.current.timeZone
-if let photos: PhotosApplication = SBApplication(
+if let photosApp: PhotosApplication = SBApplication(
     bundleIdentifier: "com.apple.Photos"
-), let selection = photos.selection {
-    for item in selection {
+), let selection = photosApp.selection {
+    for photo in selection {
         // Brute force into daylight savings time if needs be
         // (This won't catch cases where times/zones are wrong)
-        guard let itemDate = item.date,
+        guard let photoDate = photo.date,
               let offsetDate = Calendar.current.date(
                 byAdding: .second,
-                value: Int(timeZone.daylightSavingTimeOffset(for: itemDate)),
-                to: itemDate
+                value: Int(timeZone.daylightSavingTimeOffset(for: photoDate)),
+                to: photoDate
               ) else {
             continue
         }
@@ -43,29 +43,29 @@ if let photos: PhotosApplication = SBApplication(
             "max_taken_date": String(Int(offsetDate.timeIntervalSince1970))
         ])["photos"]["photo"]
 
-        let matches = candidates.arrayValue.filter { photo in
-            item.name == photo["title"].string
+        let matches = candidates.arrayValue.filter { candidate in
+            photo.name == candidate["title"].string
         }
 
-        let itemName: String
-        if let name = item.name, !name.isEmpty {
-            itemName = name
+        let photoName: String
+        if let name = photo.name, !name.isEmpty {
+            photoName = name
         } else {
-            itemName = "unnamed photo"
+            photoName = "unnamed photo"
         }
 
         guard matches.count == 1 else {
             print(
                 "⛔️ ",
                 matches.isEmpty ? "No" : matches.count,
-                "matches on flickr for \(itemName)",
-                "taken on \(itemDate) (\(candidates.count) candidates)"
+                "matches on flickr for \(photoName)",
+                "taken on \(photoDate) (\(candidates.count) candidates)"
             )
             continue
         }
 
         print(
-            "✅  Matched \(itemName) taken on \(itemDate)",
+            "✅  Matched \(photoName) taken on \(photoDate)",
             "(\(candidates.count) candidates)"
         )
     }
