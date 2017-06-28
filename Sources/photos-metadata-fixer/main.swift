@@ -1,3 +1,5 @@
+import CoreLocation
+import MapKit
 import PhotosMetadataFixerFramework
 import ScriptingBridge
 import SwiftyJSON
@@ -22,20 +24,35 @@ guard let flickrAPIKey = ProcessInfo.processInfo.environment[
 let api = FlickrAPI(withAPIKey: flickrAPIKey)
 let flickrUserID = "steviebm"
 
+func getCLLocation(for point: [Double]) -> CLLocation {
+    return CLLocation(
+        latitude: point[0], longitude: point[1]
+    )
+}
+
 func setLocation(for photo: PhotosMediaItem, from flickrPhoto: JSON) {
     if flickrPhoto["location"] != .null {
         let flickrLocation = [
             flickrPhoto["location"]["latitude"].doubleValue,
             flickrPhoto["location"]["longitude"].doubleValue
         ]
-        var locationToSet: [Double] = []
+        var newLocation: [Double]? = flickrLocation
         if let photoLocation = photo.location, !photoLocation.isEmpty {
-            print("- ❓  Compare locations?")
-        } else {
-            print("- 📌  Setting location to \(flickrLocation)")
-            locationToSet = flickrLocation
+            let distance = getCLLocation(for: flickrLocation).distance(
+                from: getCLLocation(for: photoLocation)
+            )
+            let distanceFormatter = MKDistanceFormatter()
+            distanceFormatter.units = .metric
+            print("flickr location is",
+                  distanceFormatter.string(fromDistance: distance),
+                  "from Photos location.",
+                  "Update to use flickr's location?"
+            )
+            // TODO: Actually decide if we should change the location
         }
-        print(locationToSet)
+        if let newLocation = newLocation {
+            print("- 📌  Setting location to \(newLocation)")
+        }
     } else {
         if let photoLocation = photo.location, !photoLocation.isEmpty {
             print("-   No location on flickr, but photo has location")
