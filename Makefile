@@ -8,7 +8,7 @@ build: .build/debug/photos-metadata-fixer lint
 	swift build
 
 run: .build/debug/photos-metadata-fixer lint
-	.build/debug/photos-metadata-fixer
+	.build/debug/photos-metadata-fixer $(FLICKR_USER)
 .PHONY: run
 
 HAS_XCPRETTY=$(shell command -v xcpretty)

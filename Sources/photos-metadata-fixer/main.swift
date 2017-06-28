@@ -21,8 +21,19 @@ guard let flickrAPIKey = ProcessInfo.processInfo.environment[
     exit(-1)
 }
 
+guard ProcessInfo.processInfo.arguments.count == 2 else {
+    print(
+        "⚠️  No flickr username passed.",
+        "Without that, we can't find your photos.",
+        "\nTo use the key with the app, append your username",
+        "to the command you just executed.\n",
+        to: &standardError
+    )
+    exit(-1)
+}
+let flickrUserID = ProcessInfo.processInfo.arguments[1]
+
 let api = FlickrAPI(withAPIKey: flickrAPIKey)
-let flickrUserID = "steviebm"
 
 func getCLLocation(for point: [Double]) -> CLLocation {
     return CLLocation(
