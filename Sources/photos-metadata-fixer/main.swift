@@ -1,10 +1,11 @@
 import PhotosMetadataFixerFramework
 import ScriptingBridge
+import SwiftyJSON
 
+var standardError = FileHandle.standardError
 guard let flickrAPIKey = ProcessInfo.processInfo.environment[
     "FLICKR_API_KEY"
 ] else {
-    var standardError = FileHandle.standardError
     print(
         "⚠️  No FLICKR_API_KEY environment variable.",
         "Without that, we can't access the flickr API.",
@@ -20,6 +21,32 @@ guard let flickrAPIKey = ProcessInfo.processInfo.environment[
 
 let api = FlickrAPI(withAPIKey: flickrAPIKey)
 let flickrUserID = "steviebm"
+
+func setLocation(for photo: PhotosMediaItem, from flickrPhoto: JSON) {
+    if flickrPhoto["location"] != .null {
+        let flickrLocation = [
+            flickrPhoto["location"]["latitude"].doubleValue,
+            flickrPhoto["location"]["longitude"].doubleValue
+        ]
+        var locationToSet: [Double] = []
+        if let photoLocation = photo.location, !photoLocation.isEmpty {
+            print("- ❓  Compare locations?")
+        } else {
+            print("- 📌  Setting location to \(flickrLocation)")
+            locationToSet = flickrLocation
+        }
+        print(locationToSet)
+    } else {
+        if let photoLocation = photo.location, !photoLocation.isEmpty {
+            print("-   No location on flickr, but photo has location")
+        } else {
+            print("- ⛔️  No location on flickr")
+            print(flickrPhoto["tags"]["tag"].map { _, tag in
+                tag["raw"]
+            })
+        }
+    }
+}
 
 let timeZone = Calendar.current.timeZone
 if let photosApp: PhotosApplication = SBApplication(
@@ -69,5 +96,14 @@ if let photosApp: PhotosApplication = SBApplication(
             "✅  Matched \(photoName) taken on \(photoDate)",
             "(\(candidates.count) candidates)"
         )
+        let flickrPhotoSummary = matches[0]
+
+        let flickrPhoto = api.call(
+            method: "flickr.photos.getInfo",
+            parameters: [
+                "photo_id": flickrPhotoSummary["id"].stringValue
+        ])["photo"]
+
+        setLocation(for: photo, from: flickrPhoto)
     }
 }
