@@ -57,4 +57,37 @@ public class FlickrAPI {
 
         return result
     }
+
+    func searchForPhotos(
+        fromUser user: String? = nil,
+        takenAfter: Date? = nil,
+        takenBefore: Date? = nil
+    ) -> [FlickrPhoto] {
+        var parameters: [String: String] = [:]
+        if let user = user {
+            parameters["user_id"] = user
+        }
+        if let takenAfter = takenAfter {
+            parameters["min_taken_date"] = String(Int(
+                takenAfter.timeIntervalSince1970
+            ))
+        }
+        if let takenBefore = takenBefore {
+            parameters["max_taken_date"] = String(Int(
+                takenBefore.timeIntervalSince1970
+            ))
+        }
+        let results = call(
+            method: "flickr.photos.search", parameters: parameters
+        )
+
+        guard let photosWrapper = results?["photos"] as? [String: Any],
+           let photos = photosWrapper["photo"] as? [[String: Any]] else {
+               return []
+        }
+
+        return photos.flatMap({ photo in
+            return FlickrPhoto(json: photo)
+        })
+    }
 }
