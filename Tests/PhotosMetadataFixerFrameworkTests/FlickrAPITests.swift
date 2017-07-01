@@ -114,8 +114,12 @@ class FlickrAPITests: XCTestCase {
         )
         mock.nextData = "{\"stat\": \"ok\"}".data(using: .utf8)
 
-        let actual = api.call(method: "dummy-method")
-
+        guard let actual = api.call(
+            method: "dummy-method"
+        ) as? [String: String] else {
+            XCTFail("Expected response to be of type [String: String]")
+            return
+        }
         XCTAssertEqual(["stat": "ok"], actual)
     }
 }

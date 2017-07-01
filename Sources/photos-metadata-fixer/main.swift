@@ -2,7 +2,6 @@ import CoreLocation
 import MapKit
 import PhotosMetadataFixerFramework
 import ScriptingBridge
-import SwiftyJSON
 
 var standardError = FileHandle.standardError
 guard let flickrAPIKey = ProcessInfo.processInfo.environment[
@@ -41,13 +40,17 @@ func getCLLocation(for point: [Double]) -> CLLocation {
     )
 }
 
-func setLocation(for photo: PhotosMediaItem, from flickrPhoto: JSON) {
-    if flickrPhoto["location"] != .null {
+func setLocation(for photo: PhotosMediaItem, from flickrPhoto: [String: Any]) {
+    if let locationJSON = flickrPhoto["location"] as? [String: Any],
+        let latitudeString = locationJSON["latitude"] as? String,
+        let flickrLatitude = Double(latitudeString),
+        let longitudeString = locationJSON["longitude"] as? String,
+        let flickrLongitude = Double(longitudeString) {
         let flickrLocation = [
-            flickrPhoto["location"]["latitude"].doubleValue,
-            flickrPhoto["location"]["longitude"].doubleValue
+            flickrLatitude,
+            flickrLongitude
         ]
-        var newLocation: [Double]? = flickrLocation
+        let newLocation = flickrLocation
         if let photoLocation = photo.location, !photoLocation.isEmpty {
             let distance = getCLLocation(for: flickrLocation).distance(
                 from: getCLLocation(for: photoLocation)
@@ -61,15 +64,14 @@ func setLocation(for photo: PhotosMediaItem, from flickrPhoto: JSON) {
             )
             // TODO: Actually decide if we should change the location
         }
-        if let newLocation = newLocation {
-            print("- 📌  Setting location to \(newLocation)")
-        }
+        print("- 📌  Setting location to \(newLocation)")
     } else {
         if let photoLocation = photo.location, !photoLocation.isEmpty {
             print("-   No location on flickr, but photo has location")
-        } else {
+        } else if let tagWrapper = flickrPhoto["tags"] as? [String: Any],
+             let tags = tagWrapper["tag"] as? [[String: Any]] {
             print("- ⛔️  No location on flickr")
-            print(flickrPhoto["tags"]["tag"].map { _, tag in
+            print(tags.flatMap { tag in
                 tag["raw"]
             })
         }
@@ -92,14 +94,18 @@ if let photosApp: PhotosApplication = SBApplication(
             continue
         }
 
-        let candidates = api.call(method: "flickr.photos.search", parameters: [
-            "user_id": flickrUserID,
-            "min_taken_date": String(Int(offsetDate.timeIntervalSince1970)),
-            "max_taken_date": String(Int(offsetDate.timeIntervalSince1970))
-        ])["photos"]["photo"]
+        guard let resultsWrapper = api.call(
+            method: "flickr.photos.search", parameters: [
+                "user_id": flickrUserID,
+                "min_taken_date": String(Int(offsetDate.timeIntervalSince1970)),
+                "max_taken_date": String(Int(offsetDate.timeIntervalSince1970))
+            ])?["photos"] as? [String: Any],
+            let candidates = resultsWrapper["photo"] as? [[String: Any]] else {
+            continue
+        }
 
-        let matches = candidates.arrayValue.filter { candidate in
-            photo.name == candidate["title"].string
+        let matches = candidates.filter { candidate in
+            photo.name == candidate["title"] as? String
         }
 
         let photoName: String
@@ -126,11 +132,13 @@ if let photosApp: PhotosApplication = SBApplication(
         )
         let flickrPhotoSummary = matches[0]
 
-        let flickrPhoto = api.call(
+        guard let flickrPhoto = api.call(
             method: "flickr.photos.getInfo",
             parameters: [
-                "photo_id": flickrPhotoSummary["id"].stringValue
-        ])["photo"]
+                "photo_id": (flickrPhotoSummary["id"] as? String ?? "")
+        ])?["photo"] as? [String: Any] else {
+            continue
+        }
 
         setLocation(for: photo, from: flickrPhoto)
     }

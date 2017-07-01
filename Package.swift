@@ -9,11 +9,5 @@ let package = Package(
                 .Target(name: "PhotosMetadataFixerFramework")
             ]
         )
-    ],
-    dependencies: [
-        .Package(
-            url: "https://github.com/SwiftyJSON/SwiftyJSON.git",
-            majorVersion: 3
-        )
     ]
 )
