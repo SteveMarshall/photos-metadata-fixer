@@ -94,18 +94,14 @@ if let photosApp: PhotosApplication = SBApplication(
             continue
         }
 
-        guard let resultsWrapper = api.call(
-            method: "flickr.photos.search", parameters: [
-                "user_id": flickrUserID,
-                "min_taken_date": String(Int(offsetDate.timeIntervalSince1970)),
-                "max_taken_date": String(Int(offsetDate.timeIntervalSince1970))
-            ])?["photos"] as? [String: Any],
-            let candidates = resultsWrapper["photo"] as? [[String: Any]] else {
-            continue
-        }
+        let candidates = api.searchForPhotos(
+            fromUser: flickrUserID,
+            takenAfter: offsetDate,
+            takenBefore: offsetDate
+        )
 
         let matches = candidates.filter { candidate in
-            photo.name == candidate["title"] as? String
+            photo.name == candidate.title
         }
 
         let photoName: String
@@ -135,7 +131,7 @@ if let photosApp: PhotosApplication = SBApplication(
         guard let flickrPhoto = api.call(
             method: "flickr.photos.getInfo",
             parameters: [
-                "photo_id": (flickrPhotoSummary["id"] as? String ?? "")
+                "photo_id": flickrPhotoSummary.id
         ])?["photo"] as? [String: Any] else {
             continue
         }

@@ -58,7 +58,7 @@ public class FlickrAPI {
         return result
     }
 
-    func searchForPhotos(
+    public func searchForPhotos(
         fromUser user: String? = nil,
         takenAfter: Date? = nil,
         takenBefore: Date? = nil

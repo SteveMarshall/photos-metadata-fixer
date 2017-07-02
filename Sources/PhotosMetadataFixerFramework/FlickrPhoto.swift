@@ -1,7 +1,7 @@
 public struct FlickrPhoto {
-    let id: String
-    let title: String
-    let location: (latitude: Double, longitude: Double)?
+    public let id: String
+    public let title: String
+    public let location: (latitude: Double, longitude: Double)?
 
     init?(json: [String: Any]) {
         guard let id = json["id"] as? String,
