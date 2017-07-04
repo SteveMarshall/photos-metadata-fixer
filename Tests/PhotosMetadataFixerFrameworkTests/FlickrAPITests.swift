@@ -2,6 +2,19 @@ import XCTest
 @testable import PhotosMetadataFixerFramework
 
 class FlickrAPITests: XCTestCase {
+    var mockSession: MockURLSession!
+    var api: FlickrAPI!
+
+    override func setUp() {
+        super.setUp()
+
+        mockSession = MockURLSession()
+        api = FlickrAPI(
+            withAPIKey: "dummy-api-key",
+            withURLSession: mockSession
+        )
+    }
+
     func queryItems(for url: URL?) -> [URLQueryItem]? {
         // Pass the querystring through URLComponents so we don't
         // have to manually parse it
@@ -11,11 +24,6 @@ class FlickrAPITests: XCTestCase {
     }
 
     func testCall_PassesAPIKeyParameter() {
-        let mock = MockURLSession()
-        let api = FlickrAPI(
-            withAPIKey: "dummy-api-key",
-            withURLSession: mock
-        )
         let expectedItem = URLQueryItem(
             name: "api_key",
             value: "dummy-api-key"
@@ -23,7 +31,7 @@ class FlickrAPITests: XCTestCase {
 
         _ = api.call(method: "dummy-method")
 
-        let actualQueryItems = queryItems(for: mock.lastURL)
+        let actualQueryItems = queryItems(for: mockSession.lastURL)
         XCTAssertTrue(
             actualQueryItems?.contains(expectedItem) ?? false,
             "\(expectedItem) not found in "
@@ -32,11 +40,6 @@ class FlickrAPITests: XCTestCase {
     }
 
     func testCall_RequestsJSONWithoutCallback() {
-        let mock = MockURLSession()
-        let api = FlickrAPI(
-            withAPIKey: "dummy-api-key",
-            withURLSession: mock
-        )
         let expectedItems = [
             "format": "json",
             "nojsoncallback": "1"
@@ -44,7 +47,7 @@ class FlickrAPITests: XCTestCase {
 
         _ = api.call(method: "dummy-method")
 
-        let actualQueryItems = queryItems(for: mock.lastURL)
+        let actualQueryItems = queryItems(for: mockSession.lastURL)
         for (name, value) in expectedItems {
             let expectedItem = URLQueryItem(
                 name: name,
@@ -59,11 +62,6 @@ class FlickrAPITests: XCTestCase {
     }
 
     func testCall_RequestsCorrectMethod() {
-        let mock = MockURLSession()
-        let api = FlickrAPI(
-            withAPIKey: "dummy-api-key",
-            withURLSession: mock
-        )
         let expectedItem = URLQueryItem(
             name: "method",
             value: "dummy-method"
@@ -71,7 +69,7 @@ class FlickrAPITests: XCTestCase {
 
         _ = api.call(method: "dummy-method")
 
-        let actualQueryItems = queryItems(for: mock.lastURL)
+        let actualQueryItems = queryItems(for: mockSession.lastURL)
         XCTAssertTrue(
             actualQueryItems?.contains(expectedItem) ?? false,
             "\(expectedItem) not found in "
@@ -80,11 +78,6 @@ class FlickrAPITests: XCTestCase {
     }
 
     func testCall_PassesParameters() {
-        let mock = MockURLSession()
-        let api = FlickrAPI(
-            withAPIKey: "dummy-api-key",
-            withURLSession: mock
-        )
         let expectedItems = [
             "first-parameter": "first-value",
             "second-parameter": "second-value"
@@ -92,7 +85,7 @@ class FlickrAPITests: XCTestCase {
 
         _ = api.call(method: "dummy-method", parameters: expectedItems)
 
-        let actualQueryItems = queryItems(for: mock.lastURL)
+        let actualQueryItems = queryItems(for: mockSession.lastURL)
         for (name, value) in expectedItems {
             let expectedItem = URLQueryItem(
                 name: name,
@@ -107,12 +100,7 @@ class FlickrAPITests: XCTestCase {
     }
 
     func testCall_ReturnsJSON() {
-        let mock = MockURLSession()
-        let api = FlickrAPI(
-            withAPIKey: "dummy-api-key",
-            withURLSession: mock
-        )
-        mock.nextData = "{\"stat\": \"ok\"}".data(using: .utf8)
+        mockSession.nextData = "{\"stat\": \"ok\"}".data(using: .utf8)
 
         guard let actual = api.call(
             method: "dummy-method"
@@ -124,11 +112,6 @@ class FlickrAPITests: XCTestCase {
     }
 
     func testPhotoSearch_RequestsCorrectMethod() {
-        let mock = MockURLSession()
-        let api = FlickrAPI(
-            withAPIKey: "dummy-api-key",
-            withURLSession: mock
-        )
         let expectedItem = URLQueryItem(
             name: "method",
             value: "flickr.photos.search"
@@ -136,7 +119,7 @@ class FlickrAPITests: XCTestCase {
 
         _ = api.searchForPhotos()
 
-        let actualQueryItems = queryItems(for: mock.lastURL)
+        let actualQueryItems = queryItems(for: mockSession.lastURL)
         XCTAssertTrue(
             actualQueryItems?.contains(expectedItem) ?? false,
             "\(expectedItem) not found in "
@@ -145,11 +128,6 @@ class FlickrAPITests: XCTestCase {
     }
 
     func testPhotoSearch_PassesUserIDParameter() {
-        let mock = MockURLSession()
-        let api = FlickrAPI(
-            withAPIKey: "dummy-api-key",
-            withURLSession: mock
-        )
         let expectedItem = URLQueryItem(
             name: "user_id",
             value: "test_user"
@@ -157,7 +135,7 @@ class FlickrAPITests: XCTestCase {
 
         _ = api.searchForPhotos(fromUser: expectedItem.value)
 
-        let actualQueryItems = queryItems(for: mock.lastURL)
+        let actualQueryItems = queryItems(for: mockSession.lastURL)
         XCTAssertTrue(
             actualQueryItems?.contains(expectedItem) ?? false,
             "\(expectedItem) not found in "
@@ -166,11 +144,6 @@ class FlickrAPITests: XCTestCase {
     }
 
     func testPhotoSearch_PassesTakenAfterParameter() {
-        let mock = MockURLSession()
-        let api = FlickrAPI(
-            withAPIKey: "dummy-api-key",
-            withURLSession: mock
-        )
         let expectedDate = Date(timeIntervalSince1970: 0)
         let expectedItem = URLQueryItem(
             name: "min_taken_date",
@@ -179,7 +152,7 @@ class FlickrAPITests: XCTestCase {
 
         _ = api.searchForPhotos(takenAfter: expectedDate)
 
-        let actualQueryItems = queryItems(for: mock.lastURL)
+        let actualQueryItems = queryItems(for: mockSession.lastURL)
         XCTAssertTrue(
             actualQueryItems?.contains(expectedItem) ?? false,
             "\(expectedItem) not found in "
@@ -188,11 +161,6 @@ class FlickrAPITests: XCTestCase {
     }
 
     func testPhotoSearch_PassesTakenBeforeParameter() {
-        let mock = MockURLSession()
-        let api = FlickrAPI(
-            withAPIKey: "dummy-api-key",
-            withURLSession: mock
-        )
         let expectedDate = Date(timeIntervalSince1970: 0)
         let expectedItem = URLQueryItem(
             name: "max_taken_date",
@@ -201,7 +169,7 @@ class FlickrAPITests: XCTestCase {
 
         _ = api.searchForPhotos(takenBefore: expectedDate)
 
-        let actualQueryItems = queryItems(for: mock.lastURL)
+        let actualQueryItems = queryItems(for: mockSession.lastURL)
         XCTAssertTrue(
             actualQueryItems?.contains(expectedItem) ?? false,
             "\(expectedItem) not found in "
@@ -210,13 +178,7 @@ class FlickrAPITests: XCTestCase {
     }
 
     func testPhotoSearch_GivenFlickrSearchResultsReturnsPhotos() {
-        let mock = MockURLSession()
-        let api = FlickrAPI(
-            withAPIKey: "dummy-api-key",
-            withURLSession: mock
-        )
-
-        mock.nextData = (
+        mockSession.nextData = (
             "{" +
                 "\"photos\": {" +
                     "\"photo\": [{" +
