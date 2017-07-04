@@ -15,6 +15,17 @@ class FlickrAPITests: XCTestCase {
         )
     }
 
+    func assert<T: Equatable>(
+        _ actual: [T]?, contains expected: T,
+        file: StaticString = #file, line: UInt = #line
+    ) {
+        XCTAssertTrue(
+            actual?.contains(expected) ?? false,
+            "\(expected) not found in " + String(describing: actual),
+            file: file, line: line
+        )
+    }
+
     func queryItems(for url: URL?) -> [URLQueryItem]? {
         // Pass the querystring through URLComponents so we don't
         // have to manually parse it
@@ -32,11 +43,7 @@ class FlickrAPITests: XCTestCase {
         _ = api.call(method: "dummy-method")
 
         let actualQueryItems = queryItems(for: mockSession.lastURL)
-        XCTAssertTrue(
-            actualQueryItems?.contains(expectedItem) ?? false,
-            "\(expectedItem) not found in "
-          + String(describing: actualQueryItems)
-        )
+        assert(actualQueryItems, contains: expectedItem)
     }
 
     func testCall_RequestsJSONWithoutCallback() {
@@ -53,11 +60,7 @@ class FlickrAPITests: XCTestCase {
                 name: name,
                 value: value
             )
-            XCTAssertTrue(
-                actualQueryItems?.contains(expectedItem) ?? false,
-                "\(expectedItem) not found in "
-              + String(describing: actualQueryItems)
-            )
+            assert(actualQueryItems, contains: expectedItem)
         }
     }
 
@@ -70,11 +73,7 @@ class FlickrAPITests: XCTestCase {
         _ = api.call(method: "dummy-method")
 
         let actualQueryItems = queryItems(for: mockSession.lastURL)
-        XCTAssertTrue(
-            actualQueryItems?.contains(expectedItem) ?? false,
-            "\(expectedItem) not found in "
-          + String(describing: actualQueryItems)
-        )
+        assert(actualQueryItems, contains: expectedItem)
     }
 
     func testCall_PassesParameters() {
@@ -91,11 +90,7 @@ class FlickrAPITests: XCTestCase {
                 name: name,
                 value: value
             )
-            XCTAssertTrue(
-                actualQueryItems?.contains(expectedItem) ?? false,
-                "\(expectedItem) not found in "
-              + String(describing: actualQueryItems)
-            )
+            assert(actualQueryItems, contains: expectedItem)
         }
     }
 
@@ -120,11 +115,7 @@ class FlickrAPITests: XCTestCase {
         _ = api.searchForPhotos()
 
         let actualQueryItems = queryItems(for: mockSession.lastURL)
-        XCTAssertTrue(
-            actualQueryItems?.contains(expectedItem) ?? false,
-            "\(expectedItem) not found in "
-          + String(describing: actualQueryItems)
-        )
+        assert(actualQueryItems, contains: expectedItem)
     }
 
     func testPhotoSearch_PassesUserIDParameter() {
@@ -136,11 +127,7 @@ class FlickrAPITests: XCTestCase {
         _ = api.searchForPhotos(fromUser: expectedItem.value)
 
         let actualQueryItems = queryItems(for: mockSession.lastURL)
-        XCTAssertTrue(
-            actualQueryItems?.contains(expectedItem) ?? false,
-            "\(expectedItem) not found in "
-          + String(describing: actualQueryItems)
-        )
+        assert(actualQueryItems, contains: expectedItem)
     }
 
     func testPhotoSearch_PassesTakenAfterParameter() {
@@ -153,11 +140,7 @@ class FlickrAPITests: XCTestCase {
         _ = api.searchForPhotos(takenAfter: expectedDate)
 
         let actualQueryItems = queryItems(for: mockSession.lastURL)
-        XCTAssertTrue(
-            actualQueryItems?.contains(expectedItem) ?? false,
-            "\(expectedItem) not found in "
-          + String(describing: actualQueryItems)
-        )
+        assert(actualQueryItems, contains: expectedItem)
     }
 
     func testPhotoSearch_PassesTakenBeforeParameter() {
@@ -170,11 +153,7 @@ class FlickrAPITests: XCTestCase {
         _ = api.searchForPhotos(takenBefore: expectedDate)
 
         let actualQueryItems = queryItems(for: mockSession.lastURL)
-        XCTAssertTrue(
-            actualQueryItems?.contains(expectedItem) ?? false,
-            "\(expectedItem) not found in "
-          + String(describing: actualQueryItems)
-        )
+        assert(actualQueryItems, contains: expectedItem)
     }
 
     func testPhotoSearch_GivenFlickrSearchResultsReturnsPhotos() {
