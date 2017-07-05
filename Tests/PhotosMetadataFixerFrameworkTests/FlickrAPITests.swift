@@ -177,4 +177,45 @@ class FlickrAPITests: XCTestCase {
         XCTAssertEqual("1", actual[0].id)
         XCTAssertEqual("A Photo", actual[0].title)
     }
+
+    func testGetInfoForPhoto_RequestsCorrectMethod() {
+        let expectedItem = URLQueryItem(
+            name: "method",
+            value: "flickr.photos.getInfo"
+        )
+
+        _ = api.getInfo(forPhoto: "")
+
+        let actualQueryItems = queryItems(for: mockSession.lastURL)
+        assert(actualQueryItems, contains: expectedItem)
+    }
+
+    func testGetInfoForPhoto_PassesPhotoID() {
+        let expectedItem = URLQueryItem(
+            name: "photo_id",
+            value: "0"
+        )
+
+        _ = api.getInfo(forPhoto: "0")
+
+        let actualQueryItems = queryItems(for: mockSession.lastURL)
+        assert(actualQueryItems, contains: expectedItem)
+    }
+
+    func testGetInfoForPhoto_GivenPhotoInfoResultsReturnsPhoto() {
+        mockSession.nextData = (
+            "{" +
+                "\"photo\": {" +
+                    "\"id\": \"1\"," +
+                    "\"title\": \"A Photo\"" +
+                "}" +
+            "}"
+        ).data(using: .utf8)
+
+        let actual = api.getInfo(forPhoto: "1")
+
+        XCTAssertNotNil(actual)
+        XCTAssertEqual("1", actual?.id)
+        XCTAssertEqual("A Photo", actual?.title)
+    }
 }

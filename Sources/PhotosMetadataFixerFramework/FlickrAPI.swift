@@ -90,4 +90,15 @@ public class FlickrAPI {
             return FlickrPhoto(json: photo)
         })
     }
+
+    public func getInfo(forPhoto photoID: String) -> FlickrPhoto? {
+        let results = call(
+            method: "flickr.photos.getInfo", parameters: [
+                "photo_id": photoID
+        ])
+        guard let photoInfo = results?["photo"] as? [String: Any] else {
+            return nil
+        }
+        return FlickrPhoto(json: photoInfo)
+    }
 }
