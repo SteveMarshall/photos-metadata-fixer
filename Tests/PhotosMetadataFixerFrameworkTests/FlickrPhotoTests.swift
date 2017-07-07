@@ -35,4 +35,30 @@ class FlickrPhotoTests: XCTestCase {
         XCTAssertEqual(photo?.location?.latitude, location["latitude"])
         XCTAssertEqual(photo?.location?.longitude, location["longitude"])
     }
+
+    func testInit_InitialisesPhotoWithTags() {
+        let expectedTags = [
+            "first",
+            "second"
+        ]
+        let json: [String: Any] = [
+            "id": "a1",
+            "title": "photo",
+            "tags": [
+                "tag": expectedTags.map {
+                    return ["raw": $0]
+                }
+            ]
+        ]
+        let photo = FlickrPhoto(json: json)
+
+        XCTAssertEqual(photo?.id, json["id"] as? String)
+        XCTAssertEqual(photo?.title, json["title"] as? String)
+        for tag in expectedTags {
+            XCTAssertTrue(
+                photo?.tags?.contains(tag) ?? false,
+                "\(tag) not found in " + String(describing: photo?.tags)
+            )
+        }
+    }
 }
