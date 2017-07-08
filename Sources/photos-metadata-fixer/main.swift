@@ -40,19 +40,14 @@ func getCLLocation(for point: [Double]) -> CLLocation {
     )
 }
 
-func setLocation(for photo: PhotosMediaItem, from flickrPhoto: [String: Any]) {
-    if let locationJSON = flickrPhoto["location"] as? [String: Any],
-        let latitudeString = locationJSON["latitude"] as? String,
-        let flickrLatitude = Double(latitudeString),
-        let longitudeString = locationJSON["longitude"] as? String,
-        let flickrLongitude = Double(longitudeString) {
-        let flickrLocation = [
-            flickrLatitude,
-            flickrLongitude
+func setLocation(for photo: PhotosMediaItem, from flickrPhoto: FlickrPhoto?) {
+    if let flickrLocation = flickrPhoto?.location {
+        var newLocation = [
+            flickrLocation.latitude,
+            flickrLocation.longitude
         ]
-        let newLocation = flickrLocation
         if let photoLocation = photo.location, !photoLocation.isEmpty {
-            let distance = getCLLocation(for: flickrLocation).distance(
+            let distance = getCLLocation(for: newLocation).distance(
                 from: getCLLocation(for: photoLocation)
             )
             let distanceFormatter = MKDistanceFormatter()
@@ -68,12 +63,9 @@ func setLocation(for photo: PhotosMediaItem, from flickrPhoto: [String: Any]) {
     } else {
         if let photoLocation = photo.location, !photoLocation.isEmpty {
             print("-   No location on flickr, but photo has location")
-        } else if let tagWrapper = flickrPhoto["tags"] as? [String: Any],
-             let tags = tagWrapper["tag"] as? [[String: Any]] {
+        } else if let tags = flickrPhoto?.tags {
             print("- ⛔️  No location on flickr")
-            print(tags.flatMap { tag in
-                tag["raw"]
-            })
+            print(tags)
         }
     }
 }
@@ -126,15 +118,7 @@ if let photosApp: PhotosApplication = SBApplication(
             "✅  Matched \(photoName) taken on \(photoDate)",
             "(\(candidates.count) candidates)"
         )
-        let flickrPhotoSummary = matches[0]
-
-        guard let flickrPhoto = api.call(
-            method: "flickr.photos.getInfo",
-            parameters: [
-                "photo_id": flickrPhotoSummary.id
-        ])?["photo"] as? [String: Any] else {
-            continue
-        }
+        let flickrPhoto = api.getInfo(forPhoto: matches[0].id)
 
         setLocation(for: photo, from: flickrPhoto)
     }
