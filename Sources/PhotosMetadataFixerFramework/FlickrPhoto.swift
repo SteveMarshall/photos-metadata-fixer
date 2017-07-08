@@ -6,7 +6,10 @@ public struct FlickrPhoto {
 
     init?(json: [String: Any]) {
         guard let id = json["id"] as? String,
-            let title = json["title"] as? String
+            let title = (
+               (json["title"] as? [String: String])?["_content"]
+            ??  json["title"] as? String
+            )
         else {
             return nil
         }
@@ -15,8 +18,10 @@ public struct FlickrPhoto {
         self.title = title
 
         if let location = json["location"] as? [String: Any],
-           let latitude = location["latitude"] as? Double,
-           let longitude = location["longitude"] as? Double {
+           let latitudeString = location["latitude"] as? String,
+           let latitude = Double(latitudeString),
+           let longitudeString = location["longitude"] as? String,
+           let longitude = Double(longitudeString) {
             self.location = (latitude, longitude)
         } else {
             self.location = nil
