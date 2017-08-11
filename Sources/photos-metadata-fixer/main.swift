@@ -78,27 +78,29 @@ struct Results {
 
 var results = Results()
 
-let timeZone = Calendar.current.timeZone
+let allTimeZones = TimeZone.knownTimeZoneIdentifiers.flatMap(
+    TimeZone.init(identifier:)
+)
 if let photosApp: PhotosApplication = SBApplication(
     bundleIdentifier: "com.apple.Photos"
 ), let selection = photosApp.selection {
     for photo in selection {
-        // Brute force into daylight savings time if needs be
-        // (This won't catch cases where times/zones are wrong)
-        guard let photoDate = photo.date,
-              let offsetDate = Calendar.current.date(
-                byAdding: .second,
-                value: Int(timeZone.daylightSavingTimeOffset(for: photoDate)),
-                to: photoDate
-              ) else {
+        guard let photoDate = photo.date else {
             continue
         }
 
-        let candidates = api.searchForPhotos(
-            fromUser: flickrUserID,
-            takenAfter: offsetDate,
-            takenBefore: offsetDate
-        )
+        // Find the photo in the correct timezone by brute force
+        let uniqueTimeZoneOffsets = Set(allTimeZones.map({
+            $0.secondsFromGMT(for: photoDate)
+        }))
+        let candidates = uniqueTimeZoneOffsets.map({ offset -> [FlickrPhoto] in
+            let adjustedTime = photoDate + TimeInterval(offset)
+            return api.searchForPhotos(
+                fromUser: flickrUserID,
+                takenAfter: adjustedTime,
+                takenBefore: adjustedTime
+            )
+        }).reduce([], +)
 
         let matches = candidates.filter { candidate in
             photo.name == candidate.title
