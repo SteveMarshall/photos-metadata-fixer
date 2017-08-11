@@ -70,6 +70,14 @@ func setLocation(for photo: PhotosMediaItem, from flickrPhoto: FlickrPhoto?) {
     }
 }
 
+struct Results {
+    var notMatched: Int = 0
+    var matched: Int = 0
+    var overMatched: Int = 0
+}
+
+var results = Results()
+
 let timeZone = Calendar.current.timeZone
 if let photosApp: PhotosApplication = SBApplication(
     bundleIdentifier: "com.apple.Photos"
@@ -111,6 +119,11 @@ if let photosApp: PhotosApplication = SBApplication(
                 "taken on \(photoDate) (\(candidates.count) candidates)",
                 to: &standardError
             )
+            if matches.isEmpty {
+                results.notMatched += 1
+            } else {
+                results.overMatched +=  1
+            }
             continue
         }
 
@@ -118,8 +131,11 @@ if let photosApp: PhotosApplication = SBApplication(
             "✅  Matched \(photoName) taken on \(photoDate)",
             "(\(candidates.count) candidates)"
         )
+        results.matched += 1
         let flickrPhoto = api.getInfo(forPhoto: matches[0].id)
 
         setLocation(for: photo, from: flickrPhoto)
     }
 }
+
+print(results)
