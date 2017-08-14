@@ -117,7 +117,7 @@ if let photosApp: PhotosApplication = SBApplication(
             print(
                 "⛔️ ",
                 matches.isEmpty ? "No" : matches.count,
-                "matches on flickr for \(photoName)",
+                "matches on flickr for \(photoName) (\(photo.id ?? ""))",
                 "taken on \(photoDate) (\(candidates.count) candidates)",
                 to: &standardError
             )
