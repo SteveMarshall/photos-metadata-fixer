@@ -25,11 +25,16 @@ public struct FlickrPhoto {
         self.id = id
         self.title = title
 
-        if let location = json["location"] as? [String: Any],
-           let latitudeString = location["latitude"] as? String,
-           let latitude = Double(latitudeString),
-           let longitudeString = location["longitude"] as? String,
-           let longitude = Double(longitudeString) {
+        let locationElement: [String: Any]
+        if let locationTree = json["location"] as? [String: Any] {
+            locationElement = locationTree
+        } else {
+            locationElement = json
+        }
+        if let latitudeElement = locationElement["latitude"] as? String,
+           let latitude = Double(latitudeElement),
+           let longitudeElement = locationElement["longitude"] as? String,
+           let longitude = Double(longitudeElement) {
             self.location = (latitude, longitude)
         } else {
             self.location = nil
