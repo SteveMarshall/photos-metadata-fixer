@@ -74,4 +74,38 @@ class FlickrPhotoTests: XCTestCase {
             )
         }
     }
+
+    func testInit_SetsDateTakenFromSearchResponse() {
+        let expectedDate = DateComponents(
+            calendar: Calendar.current,
+            year: 2017, month: 10, day: 4,
+            hour: 18, minute: 33
+        ).date
+        let json: [String: Any] = [
+            "id": "a1",
+            "title": "photo",
+            "datetaken": "2017-10-04 18:33:00"
+        ]
+        let photo = FlickrPhoto(json: json)
+
+        XCTAssertEqual(photo?.dateTaken, expectedDate)
+    }
+
+    func testInit_SetsDateTakenFromInfoResponse() {
+        let expectedDate = DateComponents(
+            calendar: Calendar.current,
+            year: 2017, month: 10, day: 4,
+            hour: 18, minute: 33
+        ).date
+        let json: [String: Any] = [
+            "id": "a1",
+            "title": "photo",
+            "dates": [
+                "taken": "2017-10-04 18:33:00"
+            ]
+        ]
+        let photo = FlickrPhoto(json: json)
+
+        XCTAssertEqual(photo?.dateTaken, expectedDate)
+    }
 }
