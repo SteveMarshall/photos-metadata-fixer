@@ -156,6 +156,20 @@ class FlickrAPITests: XCTestCase {
         assert(actualQueryItems, contains: expectedItem)
     }
 
+    func testPhotoSearch_PassesExtraParameters() {
+        let expectedItem = URLQueryItem(
+            name: "extra",
+            value: "geo,date_taken"
+        )
+
+        _ = api.searchForPhotos(extraParameters: [
+            expectedItem.name: expectedItem.value!
+        ])
+
+        let actualQueryItems = queryItems(for: mockSession.lastURL)
+        assert(actualQueryItems, contains: expectedItem)
+    }
+
     func testPhotoSearch_GivenFlickrSearchResultsReturnsPhotos() {
         mockSession.nextData = (
             "{" +

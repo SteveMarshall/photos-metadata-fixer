@@ -61,9 +61,10 @@ public class FlickrAPI {
     public func searchForPhotos(
         fromUser user: String? = nil,
         takenAfter: Date? = nil,
-        takenBefore: Date? = nil
+        takenBefore: Date? = nil,
+        extraParameters: [String: String] = [:]
     ) -> [FlickrPhoto] {
-        var parameters: [String: String] = [:]
+        var parameters = extraParameters
         if let user = user {
             parameters["user_id"] = user
         }
