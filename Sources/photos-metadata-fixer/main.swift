@@ -90,19 +90,19 @@ if let photosApp: PhotosApplication = SBApplication(
         }
 
         // Find the photo in the correct timezone by brute force
-        let uniqueTimeZoneOffsets = Set(allTimeZones.map({
-            $0.secondsFromGMT(for: photoDate)
+        let offsetPhotoDates = Set(allTimeZones.map({ timeZone in
+            photoDate + TimeInterval(timeZone.secondsFromGMT(for: photoDate))
         }))
         let candidates = api.searchForPhotos(
             fromUser: flickrUserID,
-            takenAfter: photoDate + TimeInterval(uniqueTimeZoneOffsets.min()!),
-            takenBefore: photoDate + TimeInterval(uniqueTimeZoneOffsets.max()!),
+            takenAfter: offsetPhotoDates.min()!,
+            takenBefore: offsetPhotoDates.max()!,
             extraParameters: ["extras": "date_taken", "per_page": "500"]
         )
 
         let matches = candidates.filter { candidate in
-            let timeMatches = uniqueTimeZoneOffsets.map({ offsetPhotoDate in
-                candidate.dateTaken == photoDate + TimeInterval(offsetPhotoDate)
+            let timeMatches = offsetPhotoDates.map({ offsetPhotoDate in
+                candidate.dateTaken == offsetPhotoDate
             })
             return (photo.name == candidate.title)
                 && timeMatches.contains(true)
