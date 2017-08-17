@@ -20,8 +20,9 @@ test: .build/debug/photos-metadata-fixer lint
 	swift test $(XCPRETTY)
 .PHONY: test
 
+LINTARGS?=--quiet
 lint:
-	swiftlint
+	swiftlint $(LINTARGS)
 .PHONY: lint
 
 clean:
