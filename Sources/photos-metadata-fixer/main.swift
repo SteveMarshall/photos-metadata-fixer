@@ -93,17 +93,19 @@ if let photosApp: PhotosApplication = SBApplication(
         let uniqueTimeZoneOffsets = Set(allTimeZones.map({
             $0.secondsFromGMT(for: photoDate)
         }))
-        let candidates = uniqueTimeZoneOffsets.map({ offset -> [FlickrPhoto] in
-            let adjustedTime = photoDate + TimeInterval(offset)
-            return api.searchForPhotos(
-                fromUser: flickrUserID,
-                takenAfter: adjustedTime,
-                takenBefore: adjustedTime
-            )
-        }).reduce([], +)
+        let candidates = api.searchForPhotos(
+            fromUser: flickrUserID,
+            takenAfter: photoDate + TimeInterval(uniqueTimeZoneOffsets.min()!),
+            takenBefore: photoDate + TimeInterval(uniqueTimeZoneOffsets.max()!),
+            extraParameters: ["extras": "date_taken", "per_page": "500"]
+        )
 
         let matches = candidates.filter { candidate in
-            photo.name == candidate.title
+            let timeMatches = uniqueTimeZoneOffsets.map({ offsetPhotoDate in
+                candidate.dateTaken == photoDate + TimeInterval(offsetPhotoDate)
+            })
+            return (photo.name == candidate.title)
+                && timeMatches.contains(true)
         }
 
         let photoName: String
