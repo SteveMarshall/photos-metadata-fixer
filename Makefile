@@ -11,7 +11,7 @@ run: .build/debug/photos-metadata-fixer lint
 	.build/debug/photos-metadata-fixer $(FLICKR_USER)
 .PHONY: run
 
-HAS_XCPRETTY=$(shell command -v xcpretty)
+HAS_XCPRETTY?=$(shell command -v xcpretty)
 ifneq ($(HAS_XCPRETTY),)
 XCPRETTY=2>&1 | xcpretty
 endif
